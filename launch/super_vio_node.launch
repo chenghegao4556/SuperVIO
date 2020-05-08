@@ -1,0 +1,6 @@
+<launch>
+  <arg name="config_path" default="/home/chenghe/catkin_ws/src/SuperVIO/cfg/super_vio_euroc_config.yaml"/>
+  <node name="super_vio_node" pkg="supervio" type="super_vio_node" output="screen" clear_params="true">
+    <rosparam file="$(arg config_path)"/>
+  </node>
+</launch>

@@ -1,0 +1,8 @@
+<library path="lib/libsupervio_nodelet">
+  <class name="SuperVIO/SuperVIONodelet" type="SuperVIO::SuperVIONodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      SuperVIO
+    </description>
+  </class>
+
+</library>

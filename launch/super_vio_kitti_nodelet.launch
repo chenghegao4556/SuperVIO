@@ -1,0 +1,8 @@
+<launch>
+  <arg name="config_path" default="/home/chenghe/catkin_ws/src/SuperVIO/cfg/super_vio_kitti.yaml"/>
+  <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" output="screen"/>
+  <node pkg="nodelet" type="nodelet" name="SuperVIONodelet"
+    args="load SuperVIO/SuperVIONodelet standalone_nodelet" output="screen">
+    <rosparam file="$(arg config_path)"/>
+  </node>
+</launch>

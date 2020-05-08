@@ -1,0 +1,65 @@
+sensor_topic:
+  image_topic: /cam0/image_raw
+  imu_topic: /imu0
+
+feature_extractor:
+    confidence_thresh: 0.015
+    distance_thresh: 8
+    horizontal_boarder_width: 10
+    vertical_boarder_width: 10
+    inference_width: 752
+    inference_height: 480
+    weight_path: /home/chenghe/catkin_ws/src/SuperVIO/data/superpoint.pt
+
+feature_tracker:
+  match_thresh: 0.8
+  parallax_thresh: 10.0
+  ratio_thresh: 0.8
+  fundamental_filter: true
+
+triangulator:
+  view_angle_check: false
+  baseline_check: false
+  baseline_thresh: 0.1
+  error_thresh: 5.0
+  view_angle_thresh: 0.1
+
+optimizer:
+  linear_solver_type: "dense_schur"
+  trust_region_strategy: "dogleg"
+  max_iteration: 10
+  num_threads: 4
+  verbose: false
+  max_solver_time: 1.0
+
+estimation:
+  min_num_match: 40
+  sliding_window_size: 10
+  parallax_thresh: 5.0
+  linearized_ba_thresh: 0.1
+  linearized_bg_thresh: 0.1
+  max_preintegration_time: 10.0
+
+imu:
+  accelerator_noise: 0.1
+  gyroscope_noise: 0.01
+  accelerator_random_walk_noise: 0.001
+  gyroscope_random_walk_noise: 0.0001
+
+camera:
+  camera_type: pinhole
+  input_intrinsic:  [ 4.6115862106007575e+02, 4.5975286598073296e+02, 3.6265929181685937e+02,  2.4852105668448124e+02]
+  input_distortion: [-2.9545645106987750e-01, 8.6623215640186171e-02, 2.0132892276082517e-06, 1.3924531371276508e-05]
+  output_intrinsic: [ 4.6115862106007575e+02, 4.5975286598073296e+02, 3.6265929181685937e+02,  2.4852105668448124e+02]
+  input_image_height: 480
+  input_image_width: 752
+  output_image_height: 480
+  output_image_width: 752
+  use_gpu_for_undistortion: true
+
+extrinsic:
+  extrinsic_rotation: [ 0.0148655429818,  -0.999880929698  ,   0.00414029679422,
+                        0.999557249008 ,   0.0149672133247 ,   0.025715529948  ,
+                       -0.0257744366974,   0.00375618835797,   0.999660727178  ]
+  extrinsic_position: [-0.0216401454975, -0.064676986768,   0.00981073058949   ]
+  gravity_norm: 9.81007
