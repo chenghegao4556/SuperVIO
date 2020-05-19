@@ -8,6 +8,7 @@
 #include <optimization/factors/imu_factor.h>
 #include <optimization/factors/inverse_depth_factor.h>
 #include <optimization/factors/marginalization_factor.h>
+#include <optimization/factors/relative_pose_factor.h>
 namespace SuperVIO::Optimization
 {
     class CostFunctionFactory
@@ -29,6 +30,10 @@ namespace SuperVIO::Optimization
 
         static ceres::CostFunction*
         CreatMarginalizationCostFunction(const MarginalizationInformation& marginalization_information);
+
+        static ceres::CostFunction*
+        CreatRelativePoseFactor(const Quaternion& q_ij, const Vector3& p_ij, const double& position_var,
+                                const double& rotation_var);
 
 
     };//end of CostFunctionFactory

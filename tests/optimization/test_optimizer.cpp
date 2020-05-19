@@ -295,6 +295,7 @@ int main()
     options.linear_solver_type = "dense_schur";
     options.max_iteration = 100;
     options.num_threads = 8;
+    options.verbose = true;
     Optimization::Optimizer::Construct(options, parameter_blocks, residual_blocks);
     Vector3s positions;
     Quaternions rotations;

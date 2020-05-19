@@ -6,16 +6,17 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++17 -Ofast")
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(Torch_DIR /home/chenghe/3rdparty/pytorch/torch/share/cmake/Torch)
-
 find_package(Torch REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
+FIND_PACKAGE(DBoW3 REQUIRED )
 find_package(catkin REQUIRED COMPONENTS
         roscpp roslib pcl_ros sensor_msgs cv_bridge image_transport tf_conversions
         nodelet camera_info_manager
 )
-
 catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS roscpp nodelet image_transport sensor_msgs camera_info_manager
@@ -52,6 +53,7 @@ add_library(${PROJECT_NAME}_nodelet
         src/optimization/factors/inverse_depth_factor.cpp
         src/optimization/factors/marginalization_factor.cpp
         src/optimization/factors/cost_function_factory.cpp
+        src/optimization/factors/relative_pose_factor.cpp
         src/optimization/parameter_blocks/base_parameter_block.cpp
         src/optimization/parameter_blocks/pose_parameter_block.cpp
         src/optimization/parameter_blocks/inverse_depth_parameter_block.cpp
@@ -62,6 +64,7 @@ add_library(${PROJECT_NAME}_nodelet
         src/optimization/residual_blocks/pre_integration_residual_block.cpp
         src/optimization/residual_blocks/reprojection_residual_block.cpp
         src/optimization/residual_blocks/marginalization_residual_block.cpp
+        src/optimization/residual_blocks/relative_pose_residual_block.cpp
         src/optimization/residual_blocks/residual_block_factory.cpp
         src/optimization/marginalizer.cpp
         src/optimization/optimizer.cpp
@@ -73,6 +76,10 @@ add_library(${PROJECT_NAME}_nodelet
         src/estimation/parameters.cpp
         src/visualization/visuailizer.cpp
         src/nodelets/super_vio_nodelet.cpp
+        src/dense_mapping/densifier.cpp
+        src/dense_mapping/mesh_regularizer.cpp
+        src/loop_closure/image_retrieval.cpp
+        src/loop_closure/loop_closure_estimator.cpp
 )
 
 include_directories(
@@ -82,6 +89,7 @@ include_directories(
         ${TORCH_INCLUDE_DIRS}
         ${CERES_INCLUDE_DIRS}
         ${Pangolin_INCLUDE_DIRS}
+        ${DBoW3_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}_nodelet
@@ -89,14 +97,16 @@ target_link_libraries(${PROJECT_NAME}_nodelet
         ${OpenCV_LIBRARIES}
         ${TORCH_LIBRARIES}
         ${CERES_LIBRARIES}
-        ${Pangolin_LIBRARIES})
+        ${Pangolin_LIBRARIES}
+        ${DBoW3_LIBRARIES}
+)
 add_dependencies(${PROJECT_NAME}_nodelet
         ${catkin_EXPORTED_TARGETS})
 
 add_executable(super_vio_node src/ros_node.cpp)
 target_link_libraries(super_vio_node ${PROJECT_NAME}_nodelet)
 
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 if(MSVC)
     # Force to always compile with W4
@@ -129,4 +139,3 @@ install(DIRECTORY launch/
 install(FILES nodelet_plugins.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-

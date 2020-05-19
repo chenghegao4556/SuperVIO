@@ -50,4 +50,14 @@ namespace SuperVIO::Optimization
         return cost_function;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    ceres::CostFunction* CostFunctionFactory::
+    CreatRelativePoseFactor(const Quaternion& q_ij, const Vector3& p_ij, const double& position_var,
+                            const double& rotation_var)
+    {
+        auto* cost_function = new RelativePoseFactor(q_ij, p_ij, position_var, rotation_var);
+
+        return cost_function;
+    }
+
 }//end of SuperVIO

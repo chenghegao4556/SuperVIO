@@ -79,7 +79,7 @@ namespace SuperVIO::Optimization
 
                 Matrix36 dpts_j_dpose_i;
 
-                dpts_j_dpose_i.leftCols<3>()  =  ric.transpose() * r_i.transpose();
+                dpts_j_dpose_i.leftCols<3>()  =  ric.transpose() * r_j.transpose();
                 dpts_j_dpose_i.rightCols<3>() = -ric.transpose() * r_j.transpose() *
                         r_i * Utility::EigenBase::SkewSymmetric(point_imu_i);
 

@@ -56,16 +56,9 @@ namespace SuperVIO::Vision
             best_matches.push_back(match.second);
         }
 
-        if(f_check)
+        if(f_check && best_matches.size() >= 8)
         {
-            if(best_matches.size() >= 8)
-            {
-                best_matches = FCheck(train_frame, query_frame, best_matches);
-            }
-            else
-            {
-                ROS_ERROR_STREAM("not enough matches to perform fundamental check");
-            }
+            best_matches = FCheck(train_frame, query_frame, best_matches);
         }
 
         double parallax = ComputeParallax(train_frame, query_frame, best_matches);

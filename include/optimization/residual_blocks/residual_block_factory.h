@@ -8,6 +8,7 @@
 #include <optimization/residual_blocks/pre_integration_residual_block.h>
 #include <optimization/residual_blocks/reprojection_residual_block.h>
 #include <optimization/residual_blocks/marginalization_residual_block.h>
+#include <optimization/residual_blocks/relative_pose_residual_block.h>
 namespace SuperVIO::Optimization
 {
     class ResidualBlockFactory
@@ -32,6 +33,10 @@ namespace SuperVIO::Optimization
 
 
         static Ptr CreatMarginalization(const MarginalizationInformation& marginalization_information);
+
+        static Ptr CreatRelativePose(const Quaternion& q_ij, const Vector3& p_ij,
+                                     const double& position_var, const double& rotation_var,
+                                     const std::vector<ParameterBlockPtr>& parameter_blocks);
     };//end of ResidualBlockFactory
 }//end of SuperVIO
 

@@ -101,12 +101,12 @@ namespace SuperVIO::Estimation
         }
 
         //! 7. remove frame outside sliding windows
-//        if(new_states_measurements.imu_state_map.size() >= parameters_.sliding_window_size)
-//        {
-//
-//        }
-        new_states_measurements = this->RemoveMeasurementsAndStates(new_states_measurements,
+        if(new_states_measurements.imu_state_map.size() >= parameters_.sliding_window_size)
+        {
+              new_states_measurements = this->RemoveMeasurementsAndStates(new_states_measurements,
                                                                     track_summery.is_key_frame);
+        }
+
 
         return new_states_measurements;
     }
@@ -171,11 +171,16 @@ namespace SuperVIO::Estimation
 
         //! 3. check validity
         size_t num_long_tracks = 0;
+        size_t long_new_feature = 0;
         for(const auto& track: track_result.track_map)
         {
             if(track.second.measurements.size() >= 4)
             {
                 num_long_tracks ++;
+                if(track.second.measurements.back().state_id == state_key)
+                {
+                    long_new_feature++;
+                }
             }
         }
 
@@ -184,6 +189,7 @@ namespace SuperVIO::Estimation
                               num_long_tracks >= 20);
 
         bool is_key_frame = last_states_measurement.frame_measurement_map.size() < 2 ||
+                             long_new_feature < 20                                   ||
                              track_result.parallax > parameters_.parallax_thresh;
 
         return TrackSummery(valid_tracking, is_key_frame, track_result.track_map, frame_measurements);
@@ -348,7 +354,7 @@ namespace SuperVIO::Estimation
                 }
                 else
                 {
-                    const double depth = RandomDepth(5.0);
+                    const double depth = 5.0;
                     const Vector2 pt0{image_points.front().x, image_points.front().y};
                     const Vector3 camera_point = parameters_.camera_ptr->BackProject(pt0) * depth;
                     const Vector3 imu_point = parameters_.q_i_c * camera_point + parameters_.p_i_c;
@@ -549,7 +555,7 @@ namespace SuperVIO::Estimation
 //                success = false;
 //            }
 
-            if(new_feature.depth > 0.0)
+            if(new_feature.depth > 0.1)
             {
                 optimized_states_measurement.feature_state_map.at(feature_ptr.first) = new_feature;
             }

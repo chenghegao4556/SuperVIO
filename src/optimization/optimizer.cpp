@@ -58,9 +58,9 @@ namespace SuperVIO::Optimization
             options.use_explicit_schur_complement = true;
             options.linear_solver_type = ceres::LinearSolverType::DENSE_SCHUR;
         }
-        else if(linear_solver_type == "sparse_schur")
+        else if(linear_solver_type == "sparse_normal_cholesky")
         {
-            options.linear_solver_type = ceres::LinearSolverType::SPARSE_SCHUR;
+            options.linear_solver_type = ceres::LinearSolverType::SPARSE_NORMAL_CHOLESKY;
             options.sparse_linear_algebra_library_type = ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE;
         }
         else

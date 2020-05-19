@@ -53,7 +53,12 @@ namespace SuperVIO::Visualization
     SetFPS(const double& fps)
     {
         WriteLock write_lock(mutex_);
-        fps_ = 1.0 / fps;
+        if(1.0/fps < 30.0)
+        {
+            fps_ = fps_ * size_ + 1.0/fps;
+            size_ += 1.0;
+            fps_ /= size_;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +131,8 @@ namespace SuperVIO::Visualization
     Visualizer(const Quaternion& q_i_c, Vector3 p_i_c):
         q_i_c_(q_i_c),
         p_i_c_(std::move(p_i_c)),
-        fps_(0)
+        fps_(0),
+        size_(0)
     {
         pangolin::CreateWindowAndBind("Super VIO Viewer", 1024, 768);
         glEnable(GL_DEPTH_TEST);

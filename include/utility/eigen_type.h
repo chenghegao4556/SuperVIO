@@ -13,6 +13,7 @@ namespace SuperVIO
     typedef Eigen::Vector2d Vector2;
     typedef Eigen::Vector3d Vector3;
     typedef Eigen::Vector4d Vector4;
+    typedef Eigen::Matrix<double, 6, 1> Vector6;
     typedef Eigen::Matrix<double, 9, 9> Matrix9;
     typedef Eigen::Matrix<double, 9, 1>  Vector9;
     typedef Eigen::Matrix<double, 15, 1> Vector15;
@@ -40,6 +41,8 @@ namespace SuperVIO
     typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
             DynamicMatrix;
 
+    typedef Eigen::Map<Eigen::Matrix<double, 6, 6, Eigen::RowMajor>> MapMatrix6;
+
     typedef Eigen::Map<DynamicMatrix> MapDynamicMatrix;
 
 
@@ -62,6 +65,7 @@ namespace SuperVIO
     typedef Eigen::Map<const Quaternion> ConstMapQuaternion;
 
     typedef Eigen::Map<Vector2> MapVector2;
+    typedef Eigen::Map<Vector6> MapVector6;
     typedef Eigen::Map<Vector9> MapVector9;
 
     typedef Eigen::Map<Vector15> MapVector15;

@@ -62,6 +62,7 @@ namespace SuperVIO::Visualization
         std::thread  thread_;
         std::shared_mutex mutex_;
         double fps_;
+        double size_;
     };//end of Visualizer
 }//end of SuperVIO::Visualization
 #endif //SUPER_VIO_VISUALIZER_H

@@ -44,4 +44,13 @@ namespace SuperVIO::Optimization
     {
         return MarginalizationResidualBlock::Creat(marginalization_information);
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    Ptr ResidualBlockFactory::
+    CreatRelativePose(const Quaternion& q_ij, const Vector3& p_ij,
+                      const double& position_var, const double& rotation_var,
+                      const std::vector<ParameterBlockPtr>& parameter_blocks)
+    {
+        return RelativePoseResidualBlock::Creat(q_ij, p_ij, position_var, rotation_var, parameter_blocks);
+    }
 }//end of SuperVIO

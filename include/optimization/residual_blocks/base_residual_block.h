@@ -22,6 +22,7 @@ namespace SuperVIO::Optimization
             PreIntegration,
             Reprojection,
             Marginalization,
+            RelativePose,
         };
 
         virtual ~BaseResidualBlock();

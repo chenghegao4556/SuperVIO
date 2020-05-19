@@ -83,7 +83,7 @@ namespace SuperVIO::Estimation
         {
             encoding = "mono8";
         }
-        auto distort_image = cv_bridge::toCvCopy(image_msg, encoding)->image;
+        auto distort_image = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::MONO8)->image;
         auto undistort_image = parameters_.camera_ptr->UndistortImage(distort_image);
         images_.push(std::make_pair(image_msg->header.stamp.toSec(), undistort_image));
     }
@@ -252,6 +252,8 @@ namespace SuperVIO::Estimation
                     }
                     timer.Toc();
                 }
+                cv::imshow("image", undistort_image);
+                cv::waitKey(1);
                 if(states_measurements.initialized)
                 {
                     visualizer_ptr_->SetData(states_measurements.imu_state_map,
