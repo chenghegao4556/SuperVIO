@@ -186,7 +186,7 @@ namespace SuperVIO::Estimation
 
         bool valid_tracking = last_states_measurement.frame_measurement_map.size() <= 4 ||
                              (static_cast<int>(track_result.num_matches) >= parameters_.min_num_match &&
-                              num_long_tracks >= 20);
+                              num_long_tracks >= 10);
 
         bool is_key_frame = last_states_measurement.frame_measurement_map.size() < 2 ||
                              long_new_feature < 20                                   ||

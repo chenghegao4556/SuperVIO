@@ -116,12 +116,17 @@ namespace SuperVIO::Vision
         }
 
         //! delete track has only one measurement
+        std::vector<Vision::TrackKey> delete_ids;
         for(auto& track: tracking_result.track_map)
         {
             if(!track.second.active && track.second.measurements.size() == 1)
             {
-                tracking_result.track_map.erase(track.first);
+                delete_ids.push_back(track.first);
             }
+        }
+        for(const auto& id: delete_ids)
+        {
+            tracking_result.track_map.erase(id);
         }
 
         return tracking_result;
