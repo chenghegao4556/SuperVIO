@@ -1,11 +1,13 @@
 # SuperVIO
 
 ## visual initial odometry using SuperPoint as Frontend.
+### indoor
 ![image](./output.gif)
+### tum outdoor 04
 ![image](./tum_outdoor_04.png)
 
 ### step 1:
-dependances： libtorch 1.1.0, opencv 3.4.1 with contrib and enable cuda, ceres 2.0.0(from github), pangolin, Dbow3
+dependencies： libtorch 1.1.0, opencv 3.4.1 with contrib and enable cuda, ceres 2.0.0(from github), Pangolin, Dbow3
 
 tips for compile libtorch
 ```
