@@ -16,7 +16,7 @@
 #include <visualization/visualizer.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber.h>
-
+#include <dense_mapping/densifier.h>
 namespace SuperVIO::Estimation
 {
     class StateEstimator
@@ -34,6 +34,8 @@ namespace SuperVIO::Estimation
 
         void ImageCallBack(const sensor_msgs::ImageConstPtr& image_msg);
         void IMUCallBack(const sensor_msgs::ImuConstPtr& imu_msg);
+        void PublishData(const VIOStatesMeasurements& states_measurements, const cv::Mat& image,
+                const double time);
 
     protected:
 
@@ -65,6 +67,8 @@ namespace SuperVIO::Estimation
         std::queue<std::pair<double, cv::Mat>> images_;
         std::queue<std::pair<double, IMU::IMURawMeasurement>>   imus_;
         Visualization::Visualizer::Ptr visualizer_ptr_;
+        ros::Publisher feature_publisher_;
+        ros::Publisher image_publisher_;
     };//end of StateEstimator
 }//end of SuperVIO::Estimation
 

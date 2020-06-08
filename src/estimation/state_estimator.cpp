@@ -2,6 +2,8 @@
 // Created by chenghe on 4/12/20.
 //
 #include <estimation/state_estimator.h>
+#include <sensor_msgs/PointCloud.h>
+
 namespace SuperVIO::Estimation
 {
     class Timer
@@ -55,6 +57,8 @@ namespace SuperVIO::Estimation
 
         parameters_.Load(nh_private_);
         visualizer_ptr_ = Visualization::Visualizer::Creat(parameters_.q_i_c, parameters_.p_i_c);
+        feature_publisher_ = nh_.advertise<sensor_msgs::PointCloud>("/feature_tracker/feature", 1000);
+        image_publisher_ = nh_.advertise<sensor_msgs::Image>("/dense_mapping/image", 1000);
         thread_ = std::thread([this] { MainThread(); });
     }
 
@@ -252,13 +256,12 @@ namespace SuperVIO::Estimation
                     }
                     timer.Toc();
                 }
-                cv::imshow("image", undistort_image);
-                cv::waitKey(1);
                 if(states_measurements.initialized)
                 {
                     visualizer_ptr_->SetData(states_measurements.imu_state_map,
                                              states_measurements.feature_state_map, states_measurements.track_map,
                                              states_measurements.frame_measurement_map, undistort_image);
+                    PublishData(states_measurements, undistort_image, current_image_time);
                 }
                 else
                 {
@@ -276,5 +279,49 @@ namespace SuperVIO::Estimation
         states_measurements.imu_raw_measurements_map.clear();
         states_measurements.imu_pre_integration_measurements_map.clear();
         states_measurements.track_map.clear();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void StateEstimator::
+    PublishData(const VIOStatesMeasurements& states_measurements, const cv::Mat& image,
+                const double current_state_key)
+    {
+        sensor_msgs::PointCloud feature_msg;
+        auto frame_iter = states_measurements.frame_measurement_map.find(current_state_key);
+        ROS_ASSERT(frame_iter != states_measurements.frame_measurement_map.end());
+        auto state_iter = states_measurements.imu_state_map.find(current_state_key);
+        ROS_ASSERT(state_iter != states_measurements.imu_state_map.end());
+        const Quaternion q_w_c = state_iter->second.rotation * parameters_.q_i_c;
+        const Vector3    p_w_c = state_iter->second.rotation * parameters_.p_i_c + state_iter->second.position;
+        const Quaternion q_c_w = q_w_c.inverse();
+        const Vector3    p_c_w = - (q_w_c.inverse() * p_w_c);
+        for(const auto& feature: states_measurements.feature_state_map)
+        {
+            auto track_iter = states_measurements.track_map.find(feature.first);
+            ROS_ASSERT(track_iter != states_measurements.track_map.end());
+            const Vector3 camera_point = q_c_w * feature.second.world_point + p_c_w;
+            Vector2 point = parameters_.camera_ptr->Project(camera_point);
+            if(point.x() >= 0 && point.x() <= image.size().width &&
+               point.y() >= 0 && point.y() <= image.size().height)
+            {
+                const double depth = camera_point.z();
+                geometry_msgs::Point32 p;
+                p.x = point.x();
+                p.y = point.y();
+                p.z = depth;
+
+                feature_msg.points.push_back(p);
+            }
+        }
+
+        std_msgs::Header header;
+        header.stamp = ros::Time(current_state_key);
+
+        sensor_msgs::ImagePtr image_msg = cv_bridge::CvImage(header, "mono8", image).toImageMsg();
+        feature_msg.header = header;
+
+        feature_publisher_.publish(feature_msg);
+        image_publisher_.publish(image_msg);
+
     }
 }//end of SuperVIO::Estimation

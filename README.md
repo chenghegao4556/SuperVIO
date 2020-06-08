@@ -1,10 +1,10 @@
 # SuperVIO
 
-## visual initial odometry using SuperPoint as Frontend.
-### indoor
-![image](./output.gif)
-### tum outdoor 04
-![image](./tum_outdoor_04.png)
+![image](./data/output.gif)
+![image](./data/tum_outdoor_04.png)
+*tum outdoor 04 result*
+![image](./data/dense_mapping.gif)
+*top left: delaunay raw depth; top right: depth map after fast bilateral solver; bottom left: confidence image; bottom right: original image*
 
 ### step 1:
 dependencies： libtorch 1.1.0, opencv 3.4.1 with contrib and enable cuda, ceres 2.0.0(from github), Pangolin, Dbow3
@@ -26,13 +26,10 @@ roslaunch supervio super_vio_node_tum_512.launch
 or (euroc dataset)
 ```
 roslaunch supervio super_vio_node.launch
+rosrun supervio dense_mapping_node
 ```
 
 ### step 3:
 play rosbag
 
 enjoy!
-
-### @todo:
-1. loop fusion
-2. dense mapping

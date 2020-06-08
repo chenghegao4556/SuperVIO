@@ -77,7 +77,7 @@ add_library(${PROJECT_NAME}_nodelet
         src/visualization/visuailizer.cpp
         src/nodelets/super_vio_nodelet.cpp
         src/dense_mapping/densifier.cpp
-        src/dense_mapping/mesh_regularizer.cpp
+        src/dense_mapping/fast_bilateral_solver.cpp
         src/loop_closure/image_retrieval.cpp
         src/loop_closure/loop_closure_estimator.cpp
 )
@@ -105,6 +105,8 @@ add_dependencies(${PROJECT_NAME}_nodelet
 
 add_executable(super_vio_node src/ros_node.cpp)
 target_link_libraries(super_vio_node ${PROJECT_NAME}_nodelet)
+add_executable(dense_mapping_node src/dense_mapping_node.cpp)
+target_link_libraries(dense_mapping_node ${PROJECT_NAME}_nodelet)
 
 add_subdirectory(tests)
 
