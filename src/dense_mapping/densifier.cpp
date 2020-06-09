@@ -73,26 +73,18 @@ namespace SuperVIO::DenseMapping
         {
             pd_map.insert(std::make_pair(std::make_pair(points[i].x, points[i].y), depths[i]));
         }
-        auto sub = cv::Subdiv2D(cv::Rect(0, 0, image_size.width, image_size.height));
-        sub.insert(points);
-        std::vector<cv::Vec6f> cv_triangles;
-        sub.getTriangleList(cv_triangles);
+//        auto sub = cv::Subdiv2D(cv::Rect(0, 0, image_size.width, image_size.height));
+//        sub.insert(points);
+//        std::vector<cv::Vec6f> cv_triangles;
+//        sub.getTriangleList(cv_triangles);
         std::vector<Triangle2D> result;
-        for(const auto& tri: cv_triangles)
+        auto triangles = Delaunay::Triangulate(points);
+        for(const auto& tri: triangles)
         {
-            std::vector<std::pair<float, float>> ps;
-            ps.emplace_back(tri[0], tri[1]);
-            ps.emplace_back(tri[2], tri[3]);
-            ps.emplace_back(tri[4], tri[5]);
-            std::sort(ps.begin(), ps.end(), compare_points);
-            if(pd_map.count(ps[0]) && pd_map.count(ps[1]) && pd_map.count(ps[2]))
-            {
-                auto d_a = pd_map.find(ps[0])->second;
-                auto d_b = pd_map.find(ps[1])->second;
-                auto d_c = pd_map.find(ps[2])->second;
-                result.emplace_back(cv::Point2f(ps[0].first, ps[0].second), cv::Point2f(ps[1].first, ps[1].second),
-                                    cv::Point2f(ps[2].first, ps[2].second), d_a, d_b, d_c);
-            }
+            auto d_a = pd_map.find(std::make_pair(tri[2].x, tri[2].y))->second;
+            auto d_b = pd_map.find(std::make_pair(tri[1].x, tri[1].y))->second;
+            auto d_c = pd_map.find(std::make_pair(tri[0].x, tri[0].y))->second;
+            result.emplace_back(tri[2], tri[1], tri[0], d_a, d_b, d_c);
         }
 
         return result;

@@ -24,8 +24,8 @@ namespace SuperVIO::Estimation
     public:
         typedef std::unique_lock<std::shared_mutex> WriteLock;
         typedef std::shared_lock<std::shared_mutex> ReadLock;
-        typedef std::map<double, Vector3, std::less<>,
-                Eigen::aligned_allocator<std::pair<const double, Vector3>>> Vector3_Map;
+        typedef std::map<size_t, Vector3, std::less<>,
+                Eigen::aligned_allocator<std::pair<const size_t, Vector3>>> Vector3_Map;
         typedef std::map<double, Quaternion, std::less<>,
                 Eigen::aligned_allocator<std::pair<const double, Quaternion>>> Quaternion_Map;
         StateEstimator(const ros::NodeHandle& nh,
@@ -69,6 +69,9 @@ namespace SuperVIO::Estimation
         Visualization::Visualizer::Ptr visualizer_ptr_;
         ros::Publisher feature_publisher_;
         ros::Publisher image_publisher_;
+
+        Vector3_Map point_cloud_;
+
     };//end of StateEstimator
 }//end of SuperVIO::Estimation
 

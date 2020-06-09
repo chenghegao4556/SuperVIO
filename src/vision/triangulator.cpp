@@ -63,43 +63,52 @@ namespace SuperVIO::Vision
                 h_points.push_back(pt_h);
             }
             Result result;
-
-            if(GoodMeasurements(poses, i_points, camera_ptr, parameters))
-            {
-                auto dlt_result = TriangulateDLT(poses, h_points);
-                result.world_point = dlt_result.first;
-                result.depth       = dlt_result.second;
-            }
-            else
-            {
-                return Result(Status::NotGoodCandidate);
-            }
-
-
-            double error = 0;
-            for(size_t i = 0; i < poses.size(); ++i)
-            {
-                auto c_point = poses[i].inverse() * result.world_point;
-
-                if(c_point.z() <= 0)
-                {
-                    result.status = Status::NegativeDepth;
-
-                    return result;
-                }
-
-                error += (camera_ptr->Project(c_point) - i_points[i]).norm();
-            }
-
-            result.mean_reprojection_error = error / static_cast<double>(h_points.size());
-            if(result.mean_reprojection_error > parameters.error_thresh)
-            {
-                result.status = Status::LargeReprojectionError;
-            }
-            else
+            auto dlt_result = TriangulateDLT(poses, h_points);
+            result.world_point = dlt_result.first;
+            result.depth       = dlt_result.second;
+            if(result.depth > 0.1)
             {
                 result.status = Status::Success;
             }
+            else
+            {
+                result.status = Status::NegativeDepth;
+            }
+
+//            if(GoodMeasurements(poses, i_points, camera_ptr, parameters))
+//            {
+//
+//            }
+//            else
+//            {
+//                return Result(Status::NotGoodCandidate);
+//            }
+
+
+//            double error = 0;
+//            for(size_t i = 0; i < poses.size(); ++i)
+//            {
+//                auto c_point = poses[i].inverse() * result.world_point;
+//
+//                if(c_point.z() <= 0)
+//                {
+//                    result.status = Status::NegativeDepth;
+//
+//                    return result;
+//                }
+//
+//                error += (camera_ptr->Project(c_point) - i_points[i]).norm();
+//            }
+//
+//            result.mean_reprojection_error = error / static_cast<double>(h_points.size());
+//            if(result.mean_reprojection_error > parameters.error_thresh)
+//            {
+//                result.status = Status::LargeReprojectionError;
+//            }
+//            else
+//            {
+//                result.status = Status::Success;
+//            }
 
             return result;
         }

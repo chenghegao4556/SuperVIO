@@ -8,6 +8,7 @@
 #include <ros/console.h>
 #include <utility/eigen_type.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <dense_mapping/delaunay.h>
 #include <dense_mapping/fast_bilateral_solver.h>
 namespace SuperVIO::DenseMapping
 {

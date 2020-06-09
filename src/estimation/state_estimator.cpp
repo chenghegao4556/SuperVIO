@@ -286,6 +286,17 @@ namespace SuperVIO::Estimation
     PublishData(const VIOStatesMeasurements& states_measurements, const cv::Mat& image,
                 const double current_state_key)
     {
+        for(const auto& feature: states_measurements.feature_state_map)
+        {
+            if(point_cloud_.find(feature.first) == point_cloud_.end())
+            {
+                point_cloud_.insert(std::make_pair(feature.first, feature.second.world_point));
+            }
+            else
+            {
+                point_cloud_[feature.first] = feature.second.world_point;
+            }
+        }
         sensor_msgs::PointCloud feature_msg;
         auto frame_iter = states_measurements.frame_measurement_map.find(current_state_key);
         ROS_ASSERT(frame_iter != states_measurements.frame_measurement_map.end());
@@ -295,14 +306,13 @@ namespace SuperVIO::Estimation
         const Vector3    p_w_c = state_iter->second.rotation * parameters_.p_i_c + state_iter->second.position;
         const Quaternion q_c_w = q_w_c.inverse();
         const Vector3    p_c_w = - (q_w_c.inverse() * p_w_c);
-        for(const auto& feature: states_measurements.feature_state_map)
+        for(const auto& feature: point_cloud_)
         {
-            auto track_iter = states_measurements.track_map.find(feature.first);
-            ROS_ASSERT(track_iter != states_measurements.track_map.end());
-            const Vector3 camera_point = q_c_w * feature.second.world_point + p_c_w;
+            const Vector3 camera_point = q_c_w * feature.second + p_c_w;
             Vector2 point = parameters_.camera_ptr->Project(camera_point);
             if(point.x() >= 0 && point.x() <= image.size().width &&
-               point.y() >= 0 && point.y() <= image.size().height)
+               point.y() >= 0 && point.y() <= image.size().height &&
+               camera_point.z() > 0.0)
             {
                 const double depth = camera_point.z();
                 geometry_msgs::Point32 p;
@@ -323,5 +333,17 @@ namespace SuperVIO::Estimation
         feature_publisher_.publish(feature_msg);
         image_publisher_.publish(image_msg);
 
+        while (point_cloud_.size() > 1000)
+        {
+            if(states_measurements.feature_state_map.find(point_cloud_.begin()->first) ==
+               states_measurements.feature_state_map.end())
+            {
+                point_cloud_.erase(point_cloud_.begin()->first);
+            }
+            else
+            {
+                break;
+            }
+        }
     }
 }//end of SuperVIO::Estimation

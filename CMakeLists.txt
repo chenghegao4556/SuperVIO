@@ -78,6 +78,8 @@ add_library(${PROJECT_NAME}_nodelet
         src/nodelets/super_vio_nodelet.cpp
         src/dense_mapping/densifier.cpp
         src/dense_mapping/fast_bilateral_solver.cpp
+        src/dense_mapping/triangle.cpp
+        src/dense_mapping/delaunay.cpp
         src/loop_closure/image_retrieval.cpp
         src/loop_closure/loop_closure_estimator.cpp
 )
