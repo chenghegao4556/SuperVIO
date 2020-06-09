@@ -68,23 +68,14 @@ namespace SuperVIO::DenseMapping
     {
         ROS_ASSERT(points.size() == depths.size());
         ROS_ASSERT(points.size() >= 10);
-        std::map<std::pair<float, float>, double> pd_map;
-        for(size_t i = 0; i < points.size(); ++i)
-        {
-            pd_map.insert(std::make_pair(std::make_pair(points[i].x, points[i].y), depths[i]));
-        }
-//        auto sub = cv::Subdiv2D(cv::Rect(0, 0, image_size.width, image_size.height));
-//        sub.insert(points);
-//        std::vector<cv::Vec6f> cv_triangles;
-//        sub.getTriangleList(cv_triangles);
         std::vector<Triangle2D> result;
         auto triangles = Delaunay::Triangulate(points);
         for(const auto& tri: triangles)
         {
-            auto d_a = pd_map.find(std::make_pair(tri[2].x, tri[2].y))->second;
-            auto d_b = pd_map.find(std::make_pair(tri[1].x, tri[1].y))->second;
-            auto d_c = pd_map.find(std::make_pair(tri[0].x, tri[0].y))->second;
-            result.emplace_back(tri[2], tri[1], tri[0], d_a, d_b, d_c);
+            auto d_a = depths[tri[2]];
+            auto d_b = depths[tri[1]];
+            auto d_c = depths[tri[0]];
+            result.emplace_back(points[tri[2]], points[tri[1]], points[tri[0]], d_a, d_b, d_c);
         }
 
         return result;

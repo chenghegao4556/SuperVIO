@@ -12,7 +12,7 @@ namespace SuperVIO::DenseMapping
     class Delaunay
     {
     public:
-        static std::vector<std::vector<cv::Point2f>>
+        static std::vector<cv::Vec3i>
         Triangulate(const std::vector<cv::Point2f>& points);
     };
 }

@@ -6,7 +6,7 @@
 
 namespace SuperVIO::DenseMapping
 {
-    std::vector<std::vector<cv::Point2f>> Delaunay::
+    std::vector<cv::Vec3i> Delaunay::
     Triangulate(const std::vector<cv::Point2f>& points)
     {
         struct triangulateio in;
@@ -45,15 +45,15 @@ namespace SuperVIO::DenseMapping
         // do triangulation (z=zero-based, n=neighbors, Q=quiet, B=no boundary markers)
         char parameters[] = "zQB";
         triangulate(parameters, &in, &out, NULL);
-        std::vector<std::vector<cv::Point2f>> triangles;
+        std::vector<cv::Vec3i> triangles;
+        triangles.resize(out.numberoftriangles);
         k = 0;
-        for (size_t i = 0; i < out.numberoftriangles; i++)
+        for (int i = 0; i < out.numberoftriangles; i++)
         {
-            std::vector<cv::Point2f> tri{points[out.trianglelist[k]],
-                                         points[out.trianglelist[k+1]],
-                                         points[out.trianglelist[k+2]]};
+            triangles[i] = cv::Vec3i(out.trianglelist[k],
+                                     out.trianglelist[k+1],
+                                     out.trianglelist[k+2]);
             k+=3;
-            triangles.push_back(tri);
         }
 
         free(in.pointlist);
