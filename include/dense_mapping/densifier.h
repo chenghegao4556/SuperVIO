@@ -10,6 +10,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <dense_mapping/delaunay.h>
 #include <dense_mapping/fast_bilateral_solver.h>
+#include <dense_mapping/internal/draw_function.h>
 namespace SuperVIO::DenseMapping
 {
     class Densifier
@@ -31,6 +32,10 @@ namespace SuperVIO::DenseMapping
         static cv::Mat
         Evaluate(const cv::Mat& image, const std::vector<cv::Point2f>& points,
                  const std::vector<double>& depth);
+
+        static cv::Mat
+        VisualizeDepthMap(const cv::Mat& image, const cv::Mat& raw_depth_map, const cv::Mat& fine_depth_map,
+                          const std::vector<Triangle2D>& triangles);
     protected:
         static std::vector<Triangle2D>
         DelaunayTriangulate(const cv::Size& image_size, const std::vector<cv::Point2f>& points,

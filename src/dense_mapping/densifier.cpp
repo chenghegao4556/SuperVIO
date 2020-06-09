@@ -29,36 +29,50 @@ namespace SuperVIO::DenseMapping
         auto pair = InterpolateMesh(image.size(), triangles);
         //! optimize depth map
         auto fine_depth_map = OptimizeDepthMap(image, pair.first, pair.second);
-        cv::Mat color_depth_map, color_fine_depth_map;
-        pair.first.convertTo(color_depth_map, CV_8UC1, 255.0/20.0, 0);
-        fine_depth_map.convertTo(color_fine_depth_map, CV_8UC1, 255.0/20.0, 0);
-        cv::normalize(color_depth_map, color_depth_map, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-        cv::normalize(color_fine_depth_map, color_fine_depth_map, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-        cv::applyColorMap(color_depth_map, color_depth_map, cv::COLORMAP_JET);
-        cv::applyColorMap(color_fine_depth_map, color_fine_depth_map, cv::COLORMAP_JET);
-        cv::Mat image_show;
-        cv::cvtColor(image, image_show, CV_GRAY2BGR);
-        cv::Mat out;
-        cv::hconcat(color_depth_map, color_fine_depth_map, out);
-        cv::hconcat(out, image_show, out);
+        //! draw functions
+        auto color_image = VisualizeDepthMap(image, pair.first, fine_depth_map, triangles);
+
         cv::namedWindow("dense mapping", cv::WINDOW_NORMAL);
-        cv::imshow("dense mapping", out);
+        cv::imshow("dense mapping", color_image);
         cv::waitKey(1);
 
         return pair.first;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
-    double get_clockwise_angle(const std::pair<float, float>& p)
+    cv::Mat Densifier::
+    VisualizeDepthMap(const cv::Mat& image, const cv::Mat& raw_depth_map, const cv::Mat& fine_depth_map,
+                      const std::vector<Triangle2D>& triangles)
     {
-        double angle = -std::atan2(p.first,-p.second);
-        return angle;
-    }
+        cv::Mat color_raw_depth_map, color_fine_depth_map;
 
-    /////////////////////////////////////////////////////////////////////////////////////////
-    bool compare_points(const std::pair<float, float>& a, const std::pair<float, float>& b)
-    {
-        return (get_clockwise_angle(a) >= get_clockwise_angle(b));
+        //! draw raw depth mesh
+        raw_depth_map.convertTo(color_raw_depth_map, CV_8UC1, 255.0/20.0, 0);
+        cv::normalize(color_raw_depth_map, color_raw_depth_map, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+        cv::applyColorMap(color_raw_depth_map, color_raw_depth_map, cv::COLORMAP_JET);
+
+        //! draw fine depth image
+        fine_depth_map.convertTo(color_fine_depth_map, CV_8UC1, 255.0/20.0, 0);
+        cv::normalize(color_fine_depth_map, color_fine_depth_map, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+        cv::applyColorMap(color_fine_depth_map, color_fine_depth_map, cv::COLORMAP_JET);
+
+        //! draw mesh
+        cv::Mat image_show;
+        cv::cvtColor(image, image_show, CV_GRAY2BGR);
+        for (const auto&triangle: triangles)
+        {
+            Internal::applyColorMapLine(color_fine_depth_map, triangle.b, triangle.a, &image_show);
+
+            Internal::applyColorMapLine(color_fine_depth_map, triangle.b, triangle.c, &image_show);
+
+            Internal::applyColorMapLine(color_fine_depth_map, triangle.c, triangle.a, &image_show);
+        }
+
+        cv::Mat output;
+        cv::hconcat(color_raw_depth_map, color_fine_depth_map, output);
+        cv::hconcat(output, image_show, output);
+
+        return output;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
