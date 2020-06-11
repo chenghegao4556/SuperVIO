@@ -11,23 +11,12 @@
 #include <dense_mapping/delaunay.h>
 #include <dense_mapping/fast_bilateral_solver.h>
 #include <dense_mapping/internal/draw_function.h>
+#include <dense_mapping/mesh_regularizer.h>
 namespace SuperVIO::DenseMapping
 {
     class Densifier
     {
     public:
-        class Triangle2D
-        {
-        public:
-            Triangle2D(const cv::Point2f& _a, const cv::Point2f& _b, const cv::Point2f& _c,
-                       double _d_a, double _d_b, double _d_c);
-            cv::Point2f a;
-            cv::Point2f b;
-            cv::Point2f c;
-            double depth_a;
-            double depth_b;
-            double depth_c;
-        };
 
         static cv::Mat
         Evaluate(const cv::Mat& image, const std::vector<cv::Point2f>& points,

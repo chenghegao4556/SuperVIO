@@ -35,7 +35,7 @@ namespace SuperVIO::DenseMapping
     {
     public:
         explicit FastBilateralSolver(const cv::Mat& image, double sigma_spatial = 8,
-                                     double sigma_luma = 4, float lambda = 128,
+                                     double sigma_luma = 8, float lambda = 192,
                                      int max_solve_iteration = 25, float error_tolerance = 1e-5);
 
         [[nodiscard]] cv::Mat Filter(const cv::Mat& raw_depth_map, const cv::Mat& confidence_map) const;

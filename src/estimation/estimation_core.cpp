@@ -558,21 +558,21 @@ namespace SuperVIO::Estimation
             {
                 optimized_states_measurement.feature_state_map.at(feature_ptr.first) = new_feature;
             }
-//            else
-//            {
-//                //! if current track has new feature, consider new feature is wrong match
-//                if(optimized_states_measurement.track_map.at(feature_ptr.first).active)
-//                {
-//                    optimized_states_measurement.track_map.at(feature_ptr.first).measurements.pop_back();
-//                    optimized_states_measurement.track_map.at(feature_ptr.first).active = false;
-//                }
-//                else
-//                {
-//                    //! total tarck is wrong
-//                    optimized_states_measurement.track_map.erase(feature_ptr.first);
-//                    optimized_states_measurement.feature_state_map.erase(feature_ptr.first);
-//                }
-//            }
+            else
+            {
+                //! if current track has new feature, consider new feature is wrong match
+                if(optimized_states_measurement.track_map.at(feature_ptr.first).active)
+                {
+                    optimized_states_measurement.track_map.at(feature_ptr.first).measurements.pop_back();
+                    optimized_states_measurement.track_map.at(feature_ptr.first).active = false;
+                }
+                else
+                {
+                    //! total tarck is wrong
+                    optimized_states_measurement.track_map.erase(feature_ptr.first);
+                    optimized_states_measurement.feature_state_map.erase(feature_ptr.first);
+                }
+            }
         }
 
         return optimized_states_measurement;

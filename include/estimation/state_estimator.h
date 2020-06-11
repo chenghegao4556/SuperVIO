@@ -35,7 +35,7 @@ namespace SuperVIO::Estimation
         void ImageCallBack(const sensor_msgs::ImageConstPtr& image_msg);
         void IMUCallBack(const sensor_msgs::ImuConstPtr& imu_msg);
         void PublishData(const VIOStatesMeasurements& states_measurements, const cv::Mat& image,
-                const double time);
+                const double time) const;
 
     protected:
 
@@ -69,8 +69,6 @@ namespace SuperVIO::Estimation
         Visualization::Visualizer::Ptr visualizer_ptr_;
         ros::Publisher feature_publisher_;
         ros::Publisher image_publisher_;
-
-        Vector3_Map point_cloud_;
 
     };//end of StateEstimator
 }//end of SuperVIO::Estimation

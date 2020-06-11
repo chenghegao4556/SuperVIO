@@ -81,6 +81,7 @@ add_library(${PROJECT_NAME}_nodelet
         src/dense_mapping/triangle.cpp
         src/dense_mapping/delaunay.cpp
         src/dense_mapping/internal/draw_function.cpp
+        src/dense_mapping/mesh_regularizer.cpp
         src/loop_closure/image_retrieval.cpp
         src/loop_closure/loop_closure_estimator.cpp
 )
