@@ -59,7 +59,7 @@ namespace SuperVIO::DenseMapping
     public:
         struct Parameters
         {
-            float data_factor = 0.05f; // lambda in the TV literature.
+            float data_factor = 0.1f; // lambda in the TV literature.
             float step_x = 0.001f; // Primal step size.
             float step_q = 125.0f; // Dual step size.
             float theta = 0.25f; // Extra gradient step size.

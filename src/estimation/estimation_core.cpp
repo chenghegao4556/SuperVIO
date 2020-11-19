@@ -8,7 +8,37 @@
 
 namespace SuperVIO::Estimation
 {
+    class Timer
+    {
+    public:
 
+        typedef std::chrono::steady_clock::time_point TimePoint;
+        Timer():
+                t1(std::chrono::steady_clock::now()),
+                t2(std::chrono::steady_clock::now())
+        {
+
+        }
+
+        void Tic()
+        {
+            t1 = std::chrono::steady_clock::now();
+        }
+
+        void Toc()
+        {
+            t2 = std::chrono::steady_clock::now();
+        }
+
+        double Duration()
+        {
+            std::chrono::duration<double> time_used = std::chrono::duration_cast<std::chrono::duration<double>> ( t2-t1 );
+            return time_used.count();
+        }
+
+    private:
+        TimePoint t1, t2;
+    };
     double RandomDepth(double init_depth)
     {
         std::random_device rd;
@@ -53,10 +83,12 @@ namespace SuperVIO::Estimation
              const IMU::IMURawMeasurements& raw_measurements) const
     {
         auto new_states_measurements = last_states_measurement;
-
+        Timer t;
+        t.Tic();
         //! 1. track image
         auto track_summery = this->TrackImage(new_states_measurements, state_key, image);
-
+        t.Toc();
+        ROS_INFO_STREAM("feature matching cost "<<t.Duration()<<" s");
         //! 1.1 detect if lost
         if(!track_summery.valid_tracking)
         {
@@ -94,10 +126,16 @@ namespace SuperVIO::Estimation
             //! 4. triangulate features
             new_states_measurements.feature_state_map = this->Triangulate(new_states_measurements);
             //! 5. optimize states
+            t.Tic();
             new_states_measurements = this->Optimize(new_states_measurements);
+            t.Toc();
+            ROS_INFO_STREAM("optimization cost "<<t.Duration()<<" s");
             //! 6. marginalize
+            t.Tic();
             new_states_measurements.marginalization_information = this->Marginalize(new_states_measurements,
                     track_summery.is_key_frame);
+            t.Toc();
+            ROS_INFO_STREAM("marginalization cost "<<t.Duration()<<" s");
         }
 
         //! 7. remove frame outside sliding windows

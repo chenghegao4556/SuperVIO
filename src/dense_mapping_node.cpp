@@ -43,6 +43,10 @@ public:
             double x = point.x;
             double y = point.y;
             double depth = point.z;
+            if(depth > 100)
+            {
+                continue;
+            }
             points_.emplace_back(x, y);
             depths_.emplace_back(depth);
         }

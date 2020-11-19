@@ -59,6 +59,7 @@ namespace SuperVIO::Estimation
         visualizer_ptr_ = Visualization::Visualizer::Creat(parameters_.q_i_c, parameters_.p_i_c);
         feature_publisher_ = nh_.advertise<sensor_msgs::PointCloud>("/feature_tracker/feature", 1000);
         image_publisher_ = nh_.advertise<sensor_msgs::Image>("/dense_mapping/image", 1000);
+        camera_pose_publisher_ = nh_.advertise<nav_msgs::Odometry>("/camera_pose", 1000);
         thread_ = std::thread([this] { MainThread(); });
     }
 
@@ -194,6 +195,7 @@ namespace SuperVIO::Estimation
         VIOStatesMeasurements states_measurements;
         size_t num_lost = 0;
         IMU::IMURawMeasurements temp_raw_measurements;
+        std::map<double, cv::Mat> images;
         while(ros::ok())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -202,6 +204,7 @@ namespace SuperVIO::Estimation
                 auto image_msg = this->GetFrontImage();
                 auto current_image_time = image_msg.first;
                 auto undistort_image = image_msg.second;
+                images.insert(std::make_pair(current_image_time, undistort_image));
 
                 while (!IMUArrived(current_image_time))
                 {
@@ -261,7 +264,7 @@ namespace SuperVIO::Estimation
                     visualizer_ptr_->SetData(states_measurements.imu_state_map,
                                              states_measurements.feature_state_map, states_measurements.track_map,
                                              states_measurements.frame_measurement_map, undistort_image);
-                    PublishData(states_measurements, undistort_image, current_image_time);
+                   PublishData(states_measurements, undistort_image, current_image_time);
                 }
                 else
                 {
@@ -297,18 +300,24 @@ namespace SuperVIO::Estimation
         const Vector3    p_c_w = - (q_w_c.inverse() * p_w_c);
         for(const auto& feature: states_measurements.feature_state_map)
         {
+            auto track_iter = states_measurements.track_map.find(feature.first);
+            ROS_ASSERT(track_iter != states_measurements.track_map.end());
+            if(track_iter->second.measurements.back().state_id != current_state_key)
+            {
+                continue;
+            }
             const Vector3 camera_point = q_c_w * feature.second.world_point + p_c_w;
             Vector2 point = parameters_.camera_ptr->Project(camera_point);
             if(point.x() >= 0 && point.x() <= image.size().width &&
                point.y() >= 0 && point.y() <= image.size().height &&
                camera_point.z() > 0.0)
             {
-                    const double depth = camera_point.z();
-                    geometry_msgs::Point32 p;
-                    p.x = point.x();
-                    p.y = point.y();
-                    p.z = depth;
-                    feature_msg.points.push_back(p);
+                const double depth = camera_point.z();
+                geometry_msgs::Point32 p;
+                p.x = point.x();
+                p.y = point.y();
+                p.z = depth;
+                feature_msg.points.push_back(p);
             }
         }
 
@@ -319,6 +328,18 @@ namespace SuperVIO::Estimation
         sensor_msgs::ImagePtr image_msg = cv_bridge::CvImage(header, "mono8", image).toImageMsg();
         feature_msg.header = header;
 
+        nav_msgs::Odometry odometry;
+        odometry.header = header;
+        odometry.header.frame_id = "world";
+        odometry.pose.pose.position.x = p_w_c.x();
+        odometry.pose.pose.position.y = p_w_c.y();
+        odometry.pose.pose.position.z = p_w_c.z();
+        odometry.pose.pose.orientation.x = q_w_c.x();
+        odometry.pose.pose.orientation.y = q_w_c.y();
+        odometry.pose.pose.orientation.z = q_w_c.z();
+        odometry.pose.pose.orientation.w = q_w_c.w();
+
+        camera_pose_publisher_.publish(odometry);
         feature_publisher_.publish(feature_msg);
         image_publisher_.publish(image_msg);
     }

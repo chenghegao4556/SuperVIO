@@ -13,15 +13,15 @@ namespace SuperVIO::DenseMapping
         auto triangles = DelaunayTriangulate(image.size(), points, depths);
         //! interpolate mesh
         auto pair = InterpolateMesh(image.size(), triangles);
+        for(const auto& p: points)
+        {
+            pair.second.at<float>(cv::Point(static_cast<int>(p.x),
+                                            static_cast<int>(p.y))) = 1.0f;
+        }
         //! optimize depth map
         auto fine_depth_map = OptimizeDepthMap(image, pair.first, pair.second);
         //! draw functions
         auto color_image = VisualizeDepthMap(image, pair.first, fine_depth_map, triangles);
-
-        cv::Mat confi;
-        pair.second.convertTo(confi, CV_8UC1, 255, 0);
-        cv::applyColorMap(confi, confi, cv::COLORMAP_JET);
-        cv::hconcat(color_image, confi, color_image);
 
         cv::namedWindow("dense mapping", cv::WINDOW_NORMAL);
         cv::imshow("dense mapping", color_image);
@@ -74,9 +74,17 @@ namespace SuperVIO::DenseMapping
         ROS_ASSERT(points.size() == depths.size());
         ROS_ASSERT(points.size() >= 10);
         auto pair = Delaunay::Triangulate(points);
-        auto triangles = MeshRegularizer::Evaluate(points, depths, pair.first, pair.second);
+        std::vector<Triangle2D> results;
+        for(const auto& tri: pair.first)
+        {
+            auto d_a = depths[tri[2]];
+            auto d_b = depths[tri[1]];
+            auto d_c = depths[tri[0]];
+            results.emplace_back(points[tri[2]], points[tri[1]], points[tri[0]], d_a, d_b, d_c);
+        }
+//        auto triangles = MeshRegularizer::Evaluate(points, depths, pair.first, pair.second);
 
-        return triangles;
+        return results;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +149,27 @@ namespace SuperVIO::DenseMapping
         return min_angle;
     }
 
+    double MinAngle(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c,
+                    const double d_a, const double d_b, const double d_c)
+    {
+        static const double fx = 4.6115862106007575e+02;
+        static const double fy = 4.5975286598073296e+02;
+        static const double cx = 3.6265929181685937e+02;
+        static const double cy = 2.4852105668448124e+02;
+        const Vector3 AB = Vector3(d_a * (a.x - cx)/fx, d_a * (a.y - cy)/fy, d_a) -
+                           Vector3(d_b * (b.x - cx)/fx, d_b * (b.y - cy)/fy, d_b);
+        const Vector3 AC = Vector3(d_a * (a.x - cx)/fx, d_a * (a.y - cy)/fy, d_a) -
+                           Vector3(d_c * (c.x - cx)/fx, d_c * (c.y - cy)/fy, d_c);
+        const Vector3 BC = Vector3(d_a * (a.x - cx)/fx, d_a * (a.y - cy)/fy, d_a) -
+                           Vector3(d_c * (c.x - cx)/fx, d_c * (c.y - cy)/fy, d_c);
+        double angle_c = std::acos(AC.dot(BC)     / (AC.norm() * BC.norm())) * 180 / M_PI;
+        double angle_a = std::acos((-AB).dot(-AC) / (AB.norm() * AC.norm())) * 180 / M_PI;
+        double angle_b = std::acos(AB.dot(-BC)    / (AB.norm() * BC.norm())) * 180 / M_PI;
+        double min_angle = std::min(std::min(angle_a, angle_b), angle_c);
+
+        return min_angle;
+    }
+
     double Area(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c)
     {
         double area = std::abs(0.5f * (a.x * b.y + b.x * c.y + c.x * a.y -
@@ -165,9 +194,10 @@ namespace SuperVIO::DenseMapping
             const auto& v1 = triangle.depth_a;
             const auto& v2 = triangle.depth_b;
             const auto& v3 = triangle.depth_c;
-            float angle = MinAngle(p1, p2, p3);
+            float angle = MinAngle(p1, p2, p3, v1, v2, v3);
             float angle_score = angle/60.0f;
-            angle_score = angle > 20 ? angle / 60 : 0.2f;
+//            angle_score = angle > 20 ? angle / 60 : 0.2f;
+            angle_score = 0.5f;
             float area  = Area(p1, p2, p3);
             float area_score = (max_area - area) / max_area;
 //            area_score = area_score > 0.2f ? area_score : 0.2f;
@@ -275,8 +305,8 @@ namespace SuperVIO::DenseMapping
                 w3_row = _mm_add_ps(w3_row, e12.oneStepY);
             }
         }
-        cv::normalize(area_map, area_map, 0, 1.0, cv::NORM_MINMAX, CV_32FC1);
-        cv::normalize(angle_map, angle_map, 0, 1.0, cv::NORM_MINMAX, CV_32FC1);
+//        cv::normalize(area_map, area_map, 0, 1.0, cv::NORM_MINMAX, CV_32FC1);
+//        cv::normalize(angle_map, angle_map, 0, 1.0, cv::NORM_MINMAX, CV_32FC1);
         cv::Mat confidence_map = area_map + angle_map;
 //        cv::normalize(confidence_map, confidence_map, 0, 1.0, cv::NORM_MINMAX, CV_32FC1);
 

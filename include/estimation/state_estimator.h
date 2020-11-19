@@ -17,6 +17,7 @@
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber.h>
 #include <dense_mapping/densifier.h>
+#include <nav_msgs/Odometry.h>
 namespace SuperVIO::Estimation
 {
     class StateEstimator
@@ -69,6 +70,7 @@ namespace SuperVIO::Estimation
         Visualization::Visualizer::Ptr visualizer_ptr_;
         ros::Publisher feature_publisher_;
         ros::Publisher image_publisher_;
+        ros::Publisher camera_pose_publisher_;
 
     };//end of StateEstimator
 }//end of SuperVIO::Estimation
