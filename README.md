@@ -24,6 +24,7 @@ or (euroc dataset)
 ```
 roslaunch supervio super_vio_node.launch
 rosrun supervio dense_mapping_node
+rosrun supervio ar_depth_node
 ```
 
 ### step 3:
